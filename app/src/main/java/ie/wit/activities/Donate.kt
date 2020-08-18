@@ -17,6 +17,7 @@ import kotlinx.android.synthetic.main.content_donate.*
 class Donate : AppCompatActivity() {
 
     lateinit var app: DonationApp
+    var totalDonated = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,8 +40,6 @@ class Donate : AppCompatActivity() {
             paymentAmount.setText("$newVal")
         }
 
-        var totalDonated = 0
-
         donateButton.setOnClickListener {
             val amount = if (paymentAmount.text.isNotEmpty())
                  paymentAmount.text.toString().toInt() else amountPicker.value
@@ -54,6 +53,13 @@ class Donate : AppCompatActivity() {
                 app.donationsStore.create(DonationModel(paymentmethod = paymentmethod,amount = amount))
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        totalDonated = app.donationsStore.findAll().sumBy { it.amount }
+        progressBar.progress = totalDonated
+        totalSoFar.text = "$$totalDonated"
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
