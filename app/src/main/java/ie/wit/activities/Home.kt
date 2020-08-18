@@ -14,22 +14,24 @@ import ie.wit.R
 import ie.wit.fragments.AboutUsFragment
 import ie.wit.fragments.DonateFragment
 import ie.wit.fragments.ReportFragment
+import ie.wit.main.DonationApp
 import kotlinx.android.synthetic.main.app_bar_home.*
-import kotlinx.android.synthetic.main.fragment_donate.*
 import kotlinx.android.synthetic.main.home.*
-import org.jetbrains.anko.progressDialog
+import kotlinx.android.synthetic.main.nav_header_home.view.*
+import org.jetbrains.anko.startActivity
 import org.jetbrains.anko.toast
 
 class Home : AppCompatActivity(),
     NavigationView.OnNavigationItemSelectedListener {
 
     lateinit var ft: FragmentTransaction
+    lateinit var app: DonationApp
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.home)
         setSupportActionBar(toolbar)
-
+        app = application as DonationApp
         fab.setOnClickListener { view ->
             Snackbar.make(view, "Replace with your own action",
                 Snackbar.LENGTH_LONG).setAction("Action", null).show()
@@ -41,6 +43,8 @@ class Home : AppCompatActivity(),
         )
         drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
+
+        navView.getHeaderView(0).nav_header_email.text = app.auth.currentUser?.email
 
         ft = supportFragmentManager.beginTransaction()
 
@@ -58,6 +62,8 @@ class Home : AppCompatActivity(),
                 navigateTo(ReportFragment.newInstance())
             R.id.nav_aboutus ->
                 navigateTo(AboutUsFragment.newInstance())
+            R.id.nav_sign_out ->
+                signOut()
 
             else -> toast("You Selected Something Else")
         }
@@ -91,5 +97,12 @@ class Home : AppCompatActivity(),
             .replace(R.id.homeFrame, fragment)
             .addToBackStack(null)
             .commit()
+    }
+
+    private fun signOut()
+    {
+        app.auth.signOut()
+        startActivity<Login>()
+        finish()
     }
 }

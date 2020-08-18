@@ -11,6 +11,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 //import com.google.firebase.quickstart.auth.R
 import ie.wit.R
+import ie.wit.main.DonationApp
 import ie.wit.utils.createLoader
 import ie.wit.utils.hideLoader
 import ie.wit.utils.showLoader
@@ -25,18 +26,17 @@ import kotlinx.android.synthetic.main.login.signOutButton
 import kotlinx.android.synthetic.main.login.signedInButtons
 import kotlinx.android.synthetic.main.login.status
 import kotlinx.android.synthetic.main.login.verifyEmailButton
+import org.jetbrains.anko.startActivity
 
 class Login : AppCompatActivity(), View.OnClickListener {
 
-    // [START declare_auth]
-    private lateinit var auth: FirebaseAuth
-    // [END declare_auth]
+    lateinit var app: DonationApp
     lateinit var loader : AlertDialog
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.login)
-
+        app = application as DonationApp
         // Buttons
         emailSignInButton.setOnClickListener(this)
         emailCreateAccountButton.setOnClickListener(this)
@@ -45,7 +45,7 @@ class Login : AppCompatActivity(), View.OnClickListener {
 
         // [START initialize_auth]
         // Initialize Firebase Auth
-        auth = FirebaseAuth.getInstance()
+        app.auth = FirebaseAuth.getInstance()
         // [END initialize_auth]
 
         loader = createLoader(this)
@@ -55,7 +55,7 @@ class Login : AppCompatActivity(), View.OnClickListener {
     public override fun onStart() {
         super.onStart()
         // Check if user is signed in (non-null) and update UI accordingly.
-        val currentUser = auth.currentUser
+        val currentUser = app.auth.currentUser
         updateUI(currentUser)
     }
     // [END on_start_check_user]
@@ -69,12 +69,12 @@ class Login : AppCompatActivity(), View.OnClickListener {
         showLoader(loader, "Creating Account...")
 
         // [START create_user_with_email]
-        auth.createUserWithEmailAndPassword(email, password)
+        app.auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
                     // Sign in success, update UI with the signed-in user's information
                     Log.d(TAG, "createUserWithEmail:success")
-                    val user = auth.currentUser
+                    val user = app.auth.currentUser
                     updateUI(user)
                 } else {
                     // If sign in fails, display a message to the user.
@@ -100,12 +100,12 @@ class Login : AppCompatActivity(), View.OnClickListener {
         showLoader(loader, "Logging In...")
 
         // [START sign_in_with_email]
-        auth.signInWithEmailAndPassword(email, password)
+        app.auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
                     // Sign in success, update UI with the signed-in user's information
                     Log.d(TAG, "signInWithEmail:success")
-                    val user = auth.currentUser
+                    val user = app.auth.currentUser
                     updateUI(user)
                 } else {
                     // If sign in fails, display a message to the user.
@@ -126,7 +126,7 @@ class Login : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun signOut() {
-        auth.signOut()
+        app.auth.signOut()
         updateUI(null)
     }
 
@@ -136,7 +136,7 @@ class Login : AppCompatActivity(), View.OnClickListener {
 
         // Send verification email
         // [START send_email_verification]
-        val user = auth.currentUser
+        val user = app.auth.currentUser
         user?.sendEmailVerification()
             ?.addOnCompleteListener(this) { task ->
                 // [START_EXCLUDE]
@@ -192,6 +192,7 @@ class Login : AppCompatActivity(), View.OnClickListener {
             signedInButtons.visibility = View.VISIBLE
 
             verifyEmailButton.isEnabled = !user.isEmailVerified
+            startActivity<Home>()
         } else {
             status.setText(R.string.signed_out)
             detail.text = null

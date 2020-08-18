@@ -28,8 +28,8 @@ abstract class SwipeToEditCallback(context: Context) : ItemTouchHelper.SimpleCal
          * if (viewHolder?.itemViewType == YourAdapter.SOME_TYPE) return 0
          * if (viewHolder?.adapterPosition == 0) return 0
          */
-        if (viewHolder?.adapterPosition == 10) return 0
-        return super.getMovementFlags(recyclerView!!, viewHolder!!)
+        if (viewHolder.adapterPosition == 10) return 0
+        return super.getMovementFlags(recyclerView, viewHolder)
     }
 
     override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
@@ -47,7 +47,7 @@ abstract class SwipeToEditCallback(context: Context) : ItemTouchHelper.SimpleCal
 
         if (isCanceled) {
             clearCanvas(c, itemView.left + dX, itemView.top.toFloat(), itemView.left.toFloat(), itemView.bottom.toFloat())
-            super.onChildDraw(c!!, recyclerView!!, viewHolder, dX, dY, actionState, isCurrentlyActive)
+            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
             return
         }
 
@@ -65,9 +65,9 @@ abstract class SwipeToEditCallback(context: Context) : ItemTouchHelper.SimpleCal
 
         // Draw the edit icon
         editIcon?.setBounds(editIconLeft, editIconTop, editIconRight, editIconBottom)
-        editIcon?.draw(c!!)
+        editIcon?.draw(c)
 
-        super.onChildDraw(c!!, recyclerView!!, viewHolder, dX, dY, actionState, isCurrentlyActive)
+        super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
     }
 
     private fun clearCanvas(c: Canvas?, left: Float, top: Float, right: Float, bottom: Float) {

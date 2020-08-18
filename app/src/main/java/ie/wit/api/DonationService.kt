@@ -1,7 +1,6 @@
 package ie.wit.api
 
 import com.google.gson.GsonBuilder
-import ie.wit.main.DonationApp
 import ie.wit.models.DonationModel
 import okhttp3.OkHttpClient
 import retrofit2.Call
@@ -14,26 +13,32 @@ interface DonationService {
     @GET("/donations")
     fun getall(): Call<List<DonationModel>>
 
-    @GET("/donations/{id}")
-    fun get(@Path("id") id: String): Call<DonationModel>
+    @GET("/donations/{email}")
+    fun findall(@Path("email") email: String?)
+            : Call<List<DonationModel>>
 
-    @DELETE("/donations/{id}")
-    fun delete(@Path("id") id: String): Call<DonationWrapper>
+    @GET("/donations/{email}/{id}")
+    fun get(@Path("email") email: String?,
+            @Path("id") id: String): Call<DonationModel>
 
-    @POST("/donations")
-    //@Headers("Content-Type: application/json")
-    fun post(@Body donation: DonationModel
-             /*,@Header("Authorization") token : String*/)
+    @DELETE("/donations/{email}/{id}")
+    fun delete(@Path("email") email: String?,
+               @Path("id") id: String): Call<DonationWrapper>
+
+    @POST("/donations/{email}")
+    fun post(@Path("email") email: String?,
+             @Body donation: DonationModel)
             : Call<DonationWrapper>
 
-    @PUT("/donations/{id}")
-    fun put(@Path("id") id: String,
+    @PUT("/donations/{email}/{id}")
+    fun put(@Path("email") email: String?,
+            @Path("id") id: String,
             @Body donation: DonationModel
     ): Call<DonationWrapper>
 
     companion object {
 
-        val serviceURL = "https://donationweb-hdip-server.herokuapp.com"
+        val serviceURL = "https://donationweb-hdip-mu-server.herokuapp.com"
 
         fun create() : DonationService {
 

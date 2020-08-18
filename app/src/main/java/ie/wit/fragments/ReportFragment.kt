@@ -17,6 +17,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 
 import ie.wit.R
 import ie.wit.adapters.DonationAdapter
+import ie.wit.adapters.DonationListener
 import ie.wit.api.DonationWrapper
 import ie.wit.main.DonationApp
 import ie.wit.models.DonationModel
@@ -30,7 +31,8 @@ import retrofit2.Callback
 import retrofit2.Response
 
 class ReportFragment : Fragment(), AnkoLogger,
-                    Callback<List<DonationModel>> {
+                    Callback<List<DonationModel>>,
+    DonationListener {
 
     lateinit var app: DonationApp
     lateinit var loader : AlertDialog
@@ -50,7 +52,7 @@ class ReportFragment : Fragment(), AnkoLogger,
         activity?.title = getString(R.string.action_report)
 
         root.recyclerView.setLayoutManager(LinearLayoutManager(activity))
-        root.recyclerView.adapter = DonationAdapter(app.donations)
+        root.recyclerView.adapter = DonationAdapter(app.donations,this)
         loader = createLoader(activity!!)
         setSwipeRefresh()
 
@@ -58,7 +60,7 @@ class ReportFragment : Fragment(), AnkoLogger,
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val adapter = root.recyclerView.adapter as DonationAdapter
                 adapter.removeAt(viewHolder.adapterPosition)
-                deleteDonation(viewHolder.itemView.tag as String)
+                deleteDonation((viewHolder.itemView.tag as DonationModel)._id)
             }
         }
         val itemTouchDeleteHelper = ItemTouchHelper(swipeDeleteHandler)
@@ -66,9 +68,7 @@ class ReportFragment : Fragment(), AnkoLogger,
 
         val swipeEditHandler = object : SwipeToEditCallback(activity!!) {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                val adapter = root.recyclerView.adapter as DonationAdapter
-                Toast.makeText(activity,"Editing",Toast.LENGTH_LONG).show()
-                adapter.removeAt(viewHolder.adapterPosition)
+                onDonationClick(viewHolder.itemView.tag as DonationModel)
             }
         }
         val itemTouchEditHelper = ItemTouchHelper(swipeEditHandler)
@@ -109,7 +109,7 @@ class ReportFragment : Fragment(), AnkoLogger,
         serviceAvailableMessage(activity!!)
         info("Retrofit JSON = ${response.body()}")
         app.donations = response.body() as ArrayList<DonationModel>
-        root.recyclerView.adapter = DonationAdapter(app.donations)
+        root.recyclerView.adapter = DonationAdapter(app.donations,this)
         root.recyclerView.adapter?.notifyDataSetChanged()
         checkSwipeRefresh()
         hideLoader(loader)
@@ -117,13 +117,13 @@ class ReportFragment : Fragment(), AnkoLogger,
 
     fun getAllDonations() {
         showLoader(loader, "Downloading the Donations List")
-        var callGetAll = app.donationService.getall()
+        var callGetAll = app.donationService.findall(app.auth.currentUser?.email)
         callGetAll.enqueue(this)
     }
 
     fun deleteDonation(id: String) {
         showLoader(loader, "Deleting Donation $id")
-        var callDelete = app.donationService.delete(id)
+        var callDelete = app.donationService.delete(app.auth.currentUser?.email,id)
         callDelete.enqueue(object : Callback<DonationWrapper> {
             override fun onFailure(call: Call<DonationWrapper>, t: Throwable) {
                 info("Retrofit Error : $t.message")
@@ -135,6 +135,13 @@ class ReportFragment : Fragment(), AnkoLogger,
                         response: Response<DonationWrapper>)
                             { hideLoader(loader) }
         })
+    }
+
+    override fun onDonationClick(donation: DonationModel) {
+        activity!!.supportFragmentManager.beginTransaction()
+            .replace(R.id.homeFrame, EditFragment.newInstance(donation))
+            .addToBackStack(null)
+            .commit()
     }
 
     override fun onResume() {
