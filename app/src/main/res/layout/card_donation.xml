@@ -24,28 +24,39 @@
 
         <TextView
             android:id="@+id/paymentamount"
-            android:layout_width="105dp"
+            android:layout_width="90dp"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
-            android:layout_marginStart="20dp"
+            android:layout_marginStart="15dp"
             android:layout_marginTop="15dp"
             android:layout_toEndOf="@+id/imageIcon"
             android:text="TextView"
+            android:textAlignment="viewStart"
             android:textColor="#000000"
             android:textSize="24sp"
             tools:text="€1000" />
 
         <TextView
             android:id="@+id/paymentmethod"
-            android:layout_width="wrap_content"
+            android:layout_width="89dp"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
-            android:layout_marginStart="30dp"
+            android:layout_marginStart="20dp"
             android:layout_marginTop="15dp"
             android:layout_toEndOf="@+id/paymentamount"
             android:text="@string/paypal"
+            android:textAlignment="viewStart"
             android:textColor="#000000"
             android:textSize="24sp" />
+
+        <ImageView
+            android:id="@+id/imagefavourite"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="21dp"
+            android:layout_toEndOf="@id/paymentmethod"
+            app:srcCompat="@android:drawable/star_big_off" />
 
     </RelativeLayout>
 </androidx.cardview.widget.CardView>

@@ -10,20 +10,29 @@ internal fun getId(): Long {
 
 class DonationMemStore : DonationStore {
 
-        val donations = ArrayList<DonationModel>()
+    var donations = ArrayList<DonationModel>()
 
         override fun findAll(): List<DonationModel> {
             return donations
         }
 
-        override fun findById(id:Long) : DonationModel? {
-            val foundDonation: DonationModel? = donations.find { it.id == id }
+        override fun findById(id:String) : DonationModel? {
+            val foundDonation: DonationModel? = donations.find { it._id == id }
             return foundDonation
         }
 
         override fun create(donation: DonationModel) {
-            donation.id = getId()
+            //donation._id = getId()
             donations.add(donation)
+            logAll()
+        }
+
+        override fun update(donation: DonationModel) {
+
+        }
+
+        override fun delete(donation: DonationModel) {
+            donations.remove(donation)
             logAll()
         }
 

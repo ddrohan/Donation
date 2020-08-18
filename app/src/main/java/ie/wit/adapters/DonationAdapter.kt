@@ -8,7 +8,7 @@ import ie.wit.R
 import ie.wit.models.DonationModel
 import kotlinx.android.synthetic.main.card_donation.view.*
 
-class DonationAdapter constructor(private var donations: List<DonationModel>)
+class DonationAdapter constructor(var donations: ArrayList<DonationModel>)
     : RecyclerView.Adapter<DonationAdapter.MainHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MainHolder {
@@ -28,11 +28,17 @@ class DonationAdapter constructor(private var donations: List<DonationModel>)
 
     override fun getItemCount(): Int = donations.size
 
+    fun removeAt(position: Int) {
+        donations.removeAt(position)
+        notifyItemRemoved(position)
+    }
+
     class MainHolder constructor(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
         fun bind(donation: DonationModel) {
+            itemView.tag = donation._id
             itemView.paymentamount.text = donation.amount.toString()
-            itemView.paymentmethod.text = donation.paymentmethod
+            itemView.paymentmethod.text = donation.paymenttype
             itemView.imageIcon.setImageResource(R.mipmap.ic_launcher_round)
         }
     }

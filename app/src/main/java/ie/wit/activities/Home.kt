@@ -17,6 +17,7 @@ import ie.wit.fragments.ReportFragment
 import kotlinx.android.synthetic.main.app_bar_home.*
 import kotlinx.android.synthetic.main.fragment_donate.*
 import kotlinx.android.synthetic.main.home.*
+import org.jetbrains.anko.progressDialog
 import org.jetbrains.anko.toast
 
 class Home : AppCompatActivity(),
@@ -35,11 +36,8 @@ class Home : AppCompatActivity(),
         }
 
         navView.setNavigationItemSelectedListener(this)
-
-        val toggle = ActionBarDrawerToggle(
-            this, drawerLayout, toolbar,
-            R.string.navigation_drawer_open,
-            R.string.navigation_drawer_close
+        val toggle = ActionBarDrawerToggle(this, drawerLayout, toolbar,
+            R.string.navigation_drawer_open, R.string.navigation_drawer_close
         )
         drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
@@ -54,9 +52,12 @@ class Home : AppCompatActivity(),
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
 
         when (item.itemId) {
-            R.id.nav_donate -> navigateTo(DonateFragment.newInstance())
-            R.id.nav_report -> navigateTo(ReportFragment.newInstance())
-            R.id.nav_aboutus -> navigateTo(AboutUsFragment.newInstance())
+            R.id.nav_donate ->
+                navigateTo(DonateFragment.newInstance())
+            R.id.nav_report ->
+                navigateTo(ReportFragment.newInstance())
+            R.id.nav_aboutus ->
+                navigateTo(AboutUsFragment.newInstance())
 
             else -> toast("You Selected Something Else")
         }
