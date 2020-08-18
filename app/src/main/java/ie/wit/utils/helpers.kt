@@ -18,7 +18,7 @@ fun createLoader(activity: FragmentActivity) : AlertDialog {
 
 fun showLoader(loader: AlertDialog, message: String) {
     if (!loader.isShowing()) {
-        if (message != null) loader.setTitle(message)
+        loader.setTitle(message)
         loader.show()
     }
 }
@@ -29,16 +29,14 @@ fun hideLoader(loader: AlertDialog) {
 }
 
 fun serviceUnavailableMessage(activity: FragmentActivity) {
-    Toast.makeText(
-        activity,
+    Toast.makeText(activity,
         "Donation Service Unavailable. Try again later",
         Toast.LENGTH_LONG
     ).show()
 }
 
 fun serviceAvailableMessage(activity: FragmentActivity) {
-    Toast.makeText(
-        activity,
+    Toast.makeText(activity,
         "Donation Contacted Successfully",
         Toast.LENGTH_LONG
     ).show()

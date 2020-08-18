@@ -13,7 +13,7 @@ class DonationAdapter constructor(var donations: ArrayList<DonationModel>)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MainHolder {
         return MainHolder(
-            LayoutInflater.from(parent.context).inflate(
+            LayoutInflater.from(parent?.context).inflate(
                 R.layout.card_donation,
                 parent,
                 false

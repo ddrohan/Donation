@@ -29,7 +29,8 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class ReportFragment : Fragment(), AnkoLogger, Callback<List<DonationModel>> {
+class ReportFragment : Fragment(), AnkoLogger,
+                    Callback<List<DonationModel>> {
 
     lateinit var app: DonationApp
     lateinit var loader : AlertDialog
@@ -63,6 +64,16 @@ class ReportFragment : Fragment(), AnkoLogger, Callback<List<DonationModel>> {
         val itemTouchDeleteHelper = ItemTouchHelper(swipeDeleteHandler)
         itemTouchDeleteHelper.attachToRecyclerView(root.recyclerView)
 
+        val swipeEditHandler = object : SwipeToEditCallback(activity!!) {
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val adapter = root.recyclerView.adapter as DonationAdapter
+                Toast.makeText(activity,"Editing",Toast.LENGTH_LONG).show()
+                adapter.removeAt(viewHolder.adapterPosition)
+            }
+        }
+        val itemTouchEditHelper = ItemTouchHelper(swipeEditHandler)
+        itemTouchEditHelper.attachToRecyclerView(root.recyclerView)
+
         return root
     }
 
@@ -94,9 +105,7 @@ class ReportFragment : Fragment(), AnkoLogger, Callback<List<DonationModel>> {
         hideLoader(loader)
     }
 
-    override fun onResponse(call: Call<List<DonationModel>>,
-                        response: Response<List<DonationModel>>
-    ) {
+    override fun onResponse(call: Call<List<DonationModel>>, response: Response<List<DonationModel>>) {
         serviceAvailableMessage(activity!!)
         info("Retrofit JSON = ${response.body()}")
         app.donations = response.body() as ArrayList<DonationModel>
@@ -122,14 +131,9 @@ class ReportFragment : Fragment(), AnkoLogger, Callback<List<DonationModel>> {
                 hideLoader(loader)
             }
 
-            override fun onResponse(
-                call: Call<DonationWrapper>,
-                response: Response<DonationWrapper>
-            ) {
-                //app.donations.remove(app.donations.find { p -> p._id == id })
-                //root.recyclerView.adapter?.notifyDataSetChanged()
-                hideLoader(loader)
-            }
+            override fun onResponse(call: Call<DonationWrapper>,
+                        response: Response<DonationWrapper>)
+                            { hideLoader(loader) }
         })
     }
 

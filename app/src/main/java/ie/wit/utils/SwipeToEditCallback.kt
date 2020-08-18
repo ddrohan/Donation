@@ -12,7 +12,7 @@ import ie.wit.R
 import org.jetbrains.anko.AnkoLogger
 import org.jetbrains.anko.info
 
-abstract class SwipeToEditCallback(context: Context) : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT), AnkoLogger {
+abstract class SwipeToEditCallback(context: Context) : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
 
     private val editIcon = ContextCompat.getDrawable(context, R.drawable.ic_swipe_edit)
     private val intrinsicWidth = editIcon?.intrinsicWidth
@@ -65,7 +65,6 @@ abstract class SwipeToEditCallback(context: Context) : ItemTouchHelper.SimpleCal
 
         // Draw the edit icon
         editIcon?.setBounds(editIconLeft, editIconTop, editIconRight, editIconBottom)
-        info ("EditSwipe : $editIconLeft $editIconTop $editIconRight $editIconBottom")
         editIcon?.draw(c!!)
 
         super.onChildDraw(c!!, recyclerView!!, viewHolder, dX, dY, actionState, isCurrentlyActive)

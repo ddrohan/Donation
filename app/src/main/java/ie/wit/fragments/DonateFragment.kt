@@ -48,7 +48,7 @@ class DonateFragment : Fragment(), AnkoLogger, Callback<List<DonationModel>> {
         root.amountPicker.minValue = 1
         root.amountPicker.maxValue = 1000
 
-        root.amountPicker.setOnValueChangedListener { _, _, newVal ->
+        root.amountPicker.setOnValueChangedListener { picker, oldVal, newVal ->
             //Display the newly selected number to paymentAmount
             root.paymentAmount.setText("$newVal")
         }

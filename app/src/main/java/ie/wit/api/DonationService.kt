@@ -21,7 +21,10 @@ interface DonationService {
     fun delete(@Path("id") id: String): Call<DonationWrapper>
 
     @POST("/donations")
-    fun post(@Body donation: DonationModel): Call<DonationWrapper>
+    //@Headers("Content-Type: application/json")
+    fun post(@Body donation: DonationModel
+             /*,@Header("Authorization") token : String*/)
+            : Call<DonationWrapper>
 
     @PUT("/donations/{id}")
     fun put(@Path("id") id: String,
