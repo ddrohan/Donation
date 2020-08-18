@@ -28,6 +28,7 @@ class ReportFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         var root = inflater.inflate(R.layout.fragment_report, container, false)
+        activity?.title = getString(R.string.action_report)
 
         root.recyclerView.setLayoutManager(LinearLayoutManager(activity))
         root.recyclerView.adapter = DonationAdapter(app.donationsStore.findAll())

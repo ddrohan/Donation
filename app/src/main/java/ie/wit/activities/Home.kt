@@ -11,9 +11,11 @@ import androidx.fragment.app.FragmentTransaction
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import ie.wit.R
+import ie.wit.fragments.AboutUsFragment
 import ie.wit.fragments.DonateFragment
 import ie.wit.fragments.ReportFragment
 import kotlinx.android.synthetic.main.app_bar_home.*
+import kotlinx.android.synthetic.main.fragment_donate.*
 import kotlinx.android.synthetic.main.home.*
 import org.jetbrains.anko.toast
 
@@ -54,6 +56,7 @@ class Home : AppCompatActivity(),
         when (item.itemId) {
             R.id.nav_donate -> navigateTo(DonateFragment.newInstance())
             R.id.nav_report -> navigateTo(ReportFragment.newInstance())
+            R.id.nav_aboutus -> navigateTo(AboutUsFragment.newInstance())
 
             else -> toast("You Selected Something Else")
         }
