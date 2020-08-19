@@ -7,9 +7,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
 
 import ie.wit.R
-import ie.wit.api.DonationWrapper
 import ie.wit.main.DonationApp
 import ie.wit.models.DonationModel
 import ie.wit.utils.*
@@ -18,17 +20,16 @@ import kotlinx.android.synthetic.main.fragment_donate.view.*
 import org.jetbrains.anko.AnkoLogger
 import org.jetbrains.anko.info
 import org.jetbrains.anko.toast
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import java.lang.String.format
+import java.util.HashMap
 
 
-class DonateFragment : Fragment(), AnkoLogger, Callback<List<DonationModel>> {
+class DonateFragment : Fragment(), AnkoLogger {
 
     lateinit var app: DonationApp
     var totalDonated = 0
     lateinit var loader : AlertDialog
+    lateinit var eventListener : ValueEventListener
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,62 +73,64 @@ class DonateFragment : Fragment(), AnkoLogger, Callback<List<DonationModel>> {
                 activity?.toast("Donate Amount Exceeded!")
             else {
                 val paymentmethod = if(layout.paymentMethod.checkedRadioButtonId == R.id.Direct) "Direct" else "Paypal"
-                addDonation(DonationModel(paymenttype = paymentmethod,amount = amount))
+                writeNewDonation(DonationModel(paymenttype = paymentmethod, amount = amount,
+                                               email = app.auth.currentUser?.email))
             }
         }
     }
 
-    fun addDonation(donation : DonationModel) {
-        showLoader(loader, "Adding Donation to Server...")
-        var callAdd = app.donationService.post(app.auth.currentUser?.email,donation)
-        callAdd.enqueue(object : Callback<DonationWrapper> {
-            override fun onFailure(call: Call<DonationWrapper>, t: Throwable) {
-                info("Retrofit Error : $t.message")
-                serviceUnavailableMessage(activity!!)
-                hideLoader(loader)
-            }
-
-            override fun onResponse(call: Call<DonationWrapper>,
-                                    response: Response<DonationWrapper>) {
-                val donationWrapper = response.body()
-                info("Retrofit Wrapper : $donationWrapper")
-                getAllDonations()
-                updateUI()
-                hideLoader(loader)
-            }
-        })
-    }
     override fun onResume() {
         super.onResume()
-        getAllDonations()
+        getTotalDonated(app.auth.currentUser?.uid)
     }
 
-    fun getAllDonations() {
-        showLoader(loader, "Downloading Donations List")
-        var callGetAll = app.donationService.findall(app.auth.currentUser?.email)
-        callGetAll.enqueue(this)
+    override fun onPause() {
+        super.onPause()
+        app.database.child("user-donations")
+                    .child(app.auth.currentUser!!.uid)
+                    .removeEventListener(eventListener)
     }
 
-    override fun onResponse(call: Call<List<DonationModel>>,
-                            response: Response<List<DonationModel>>) {
-        // donationServiceAvailable = true
-        serviceAvailableMessage(activity!!)
-        info("Retrofit JSON = ${response.body()}")
-        app.donations = response.body() as ArrayList<DonationModel>
-        updateUI()
+    fun writeNewDonation(donation: DonationModel) {
+        // Create new donation at /donations & /donations/$uid
+        showLoader(loader, "Adding Donation to Firebase")
+        info("Firebase DB Reference : $app.database")
+        val uid = app.auth.currentUser!!.uid
+        val key = app.database.child("donations").push().key
+        if (key == null) {
+            info("Firebase Error : Key Empty")
+            return
+        }
+        donation.uid = key
+        val donationValues = donation.toMap()
+
+        val childUpdates = HashMap<String, Any>()
+        childUpdates["/donations/$key"] = donationValues
+        childUpdates["/user-donations/$uid/$key"] = donationValues
+
+        app.database.updateChildren(childUpdates)
         hideLoader(loader)
     }
 
-    override fun onFailure(call: Call<List<DonationModel>>, t: Throwable) {
-        // donationServiceAvailable = false
-        info("Retrofit Error : $t.message")
-        serviceUnavailableMessage(activity!!)
-        hideLoader(loader)
-    }
+    fun getTotalDonated(userId: String?) {
+        eventListener = object : ValueEventListener {
+            override fun onCancelled(error: DatabaseError) {
+                info("Firebase Donation error : ${error.message}")
+            }
 
-    fun updateUI() {
-        totalDonated = app.donations.sumBy { it.amount }
-        progressBar.progress = totalDonated
-        totalSoFar.text = format("$ $totalDonated")
+            override fun onDataChange(snapshot: DataSnapshot) {
+                totalDonated = 0
+                val children = snapshot.children
+                children.forEach {
+                    val donation = it.getValue<DonationModel>(DonationModel::class.java)
+                    totalDonated += donation!!.amount
+                }
+                progressBar.progress = totalDonated
+                totalSoFar.text = format("$ $totalDonated")
+            }
+        }
+
+        app.database.child("user-donations").child(userId!!)
+            .addValueEventListener(eventListener)
     }
 }

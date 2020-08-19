@@ -6,32 +6,26 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.SimpleAdapter
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
 
 import ie.wit.R
 import ie.wit.adapters.DonationAdapter
 import ie.wit.adapters.DonationListener
-import ie.wit.api.DonationWrapper
 import ie.wit.main.DonationApp
 import ie.wit.models.DonationModel
 import ie.wit.utils.*
-import kotlinx.android.synthetic.main.fragment_report.*
 import kotlinx.android.synthetic.main.fragment_report.view.*
 import org.jetbrains.anko.AnkoLogger
 import org.jetbrains.anko.info
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 class ReportFragment : Fragment(), AnkoLogger,
-                    Callback<List<DonationModel>>,
     DonationListener {
 
     lateinit var app: DonationApp
@@ -52,15 +46,15 @@ class ReportFragment : Fragment(), AnkoLogger,
         activity?.title = getString(R.string.action_report)
 
         root.recyclerView.setLayoutManager(LinearLayoutManager(activity))
-        root.recyclerView.adapter = DonationAdapter(app.donations,this)
-        loader = createLoader(activity!!)
         setSwipeRefresh()
 
         val swipeDeleteHandler = object : SwipeToDeleteCallback(activity!!) {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val adapter = root.recyclerView.adapter as DonationAdapter
                 adapter.removeAt(viewHolder.adapterPosition)
-                deleteDonation((viewHolder.itemView.tag as DonationModel)._id)
+                deleteDonation((viewHolder.itemView.tag as DonationModel).uid)
+                deleteUserDonation(app.auth.currentUser!!.uid,
+                                  (viewHolder.itemView.tag as DonationModel).uid)
             }
         }
         val itemTouchDeleteHelper = ItemTouchHelper(swipeDeleteHandler)
@@ -89,7 +83,7 @@ class ReportFragment : Fragment(), AnkoLogger,
         root.swiperefresh.setOnRefreshListener(object : SwipeRefreshLayout.OnRefreshListener {
             override fun onRefresh() {
                 root.swiperefresh.isRefreshing = true
-                getAllDonations()
+                getAllDonations(app.auth.currentUser!!.uid)
             }
         })
     }
@@ -98,43 +92,31 @@ class ReportFragment : Fragment(), AnkoLogger,
         if (root.swiperefresh.isRefreshing) root.swiperefresh.isRefreshing = false
     }
 
-    override fun onFailure(call: Call<List<DonationModel>>, t: Throwable) {
-        info("Retrofit Error : $t.message")
-        serviceUnavailableMessage(activity!!)
-        checkSwipeRefresh()
-        hideLoader(loader)
+    fun deleteUserDonation(userId: String, uid: String?) {
+        app.database.child("user-donations").child(userId).child(uid!!)
+            .addListenerForSingleValueEvent(
+                object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        snapshot.ref.removeValue()
+                    }
+                    override fun onCancelled(error: DatabaseError) {
+                        info("Firebase Donation error : ${error.message}")
+                    }
+                })
     }
 
-    override fun onResponse(call: Call<List<DonationModel>>, response: Response<List<DonationModel>>) {
-        serviceAvailableMessage(activity!!)
-        info("Retrofit JSON = ${response.body()}")
-        app.donations = response.body() as ArrayList<DonationModel>
-        root.recyclerView.adapter = DonationAdapter(app.donations,this)
-        root.recyclerView.adapter?.notifyDataSetChanged()
-        checkSwipeRefresh()
-        hideLoader(loader)
-    }
+    fun deleteDonation(uid: String?) {
+        app.database.child("donations").child(uid!!)
+            .addListenerForSingleValueEvent(
+                object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        snapshot.ref.removeValue()
+                    }
 
-    fun getAllDonations() {
-        showLoader(loader, "Downloading the Donations List")
-        var callGetAll = app.donationService.findall(app.auth.currentUser?.email)
-        callGetAll.enqueue(this)
-    }
-
-    fun deleteDonation(id: String) {
-        showLoader(loader, "Deleting Donation $id")
-        var callDelete = app.donationService.delete(app.auth.currentUser?.email,id)
-        callDelete.enqueue(object : Callback<DonationWrapper> {
-            override fun onFailure(call: Call<DonationWrapper>, t: Throwable) {
-                info("Retrofit Error : $t.message")
-                serviceUnavailableMessage(activity!!)
-                hideLoader(loader)
-            }
-
-            override fun onResponse(call: Call<DonationWrapper>,
-                        response: Response<DonationWrapper>)
-                            { hideLoader(loader) }
-        })
+                    override fun onCancelled(error: DatabaseError) {
+                        info("Firebase Donation error : ${error.message}")
+                    }
+                })
     }
 
     override fun onDonationClick(donation: DonationModel) {
@@ -146,6 +128,36 @@ class ReportFragment : Fragment(), AnkoLogger,
 
     override fun onResume() {
         super.onResume()
-        getAllDonations()
+        getAllDonations(app.auth.currentUser!!.uid)
+    }
+
+    fun getAllDonations(userId: String?) {
+        loader = createLoader(activity!!)
+        showLoader(loader, "Downloading Donations from Firebase")
+        val donationsList = ArrayList<DonationModel>()
+        app.database.child("user-donations").child(userId!!)
+            .addValueEventListener(object : ValueEventListener {
+                override fun onCancelled(error: DatabaseError) {
+                    info("Firebase Donation error : ${error.message}")
+                }
+
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    hideLoader(loader)
+                    val children = snapshot.children
+                    children.forEach {
+                        val donation = it.
+                            getValue<DonationModel>(DonationModel::class.java)
+
+                        donationsList.add(donation!!)
+                        root.recyclerView.adapter =
+                            DonationAdapter(donationsList, this@ReportFragment)
+                        root.recyclerView.adapter?.notifyDataSetChanged()
+                        checkSwipeRefresh()
+
+                        app.database.child("user-donations").child(userId)
+                            .removeEventListener(this)
+                    }
+                }
+            })
     }
 }

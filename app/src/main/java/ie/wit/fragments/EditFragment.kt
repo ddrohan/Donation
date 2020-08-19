@@ -7,23 +7,21 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
 
 import ie.wit.R
-import ie.wit.api.DonationWrapper
 import ie.wit.main.DonationApp
 import ie.wit.models.DonationModel
 import ie.wit.utils.createLoader
 import ie.wit.utils.hideLoader
-import ie.wit.utils.serviceUnavailableMessage
 import ie.wit.utils.showLoader
 import kotlinx.android.synthetic.main.fragment_edit.view.*
 import org.jetbrains.anko.AnkoLogger
 import org.jetbrains.anko.info
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
-class EditFragment : Fragment(), Callback<DonationWrapper>, AnkoLogger {
+class EditFragment : Fragment(), AnkoLogger {
 
     lateinit var app: DonationApp
     lateinit var loader : AlertDialog
@@ -56,14 +54,13 @@ class EditFragment : Fragment(), Callback<DonationWrapper>, AnkoLogger {
         root.editUpdateButton.setOnClickListener {
             showLoader(loader, "Updating Donation on Server...")
             updateDonationData()
-            var callUpdate = app.donationService.put(app.auth.currentUser?.email,
-                (editDonation as DonationModel)._id ,editDonation as DonationModel)
-            callUpdate.enqueue(this)
+            updateDonation(editDonation!!.uid, editDonation!!)
+            updateUserDonation(app.auth.currentUser!!.uid,
+                               editDonation!!.uid, editDonation!!)
         }
 
         return root
     }
-
 
     companion object {
         @JvmStatic
@@ -75,23 +72,43 @@ class EditFragment : Fragment(), Callback<DonationWrapper>, AnkoLogger {
             }
     }
 
-    override fun onFailure(call: Call<DonationWrapper>, t: Throwable) {
-        info("Retrofit Error : $t.message")
-        serviceUnavailableMessage(activity!!)
-        hideLoader(loader)
-    }
-
-    override fun onResponse(call: Call<DonationWrapper>, response: Response<DonationWrapper>) {
-        hideLoader(loader)
-        activity!!.supportFragmentManager.beginTransaction()
-            .replace(R.id.homeFrame, ReportFragment.newInstance())
-            .addToBackStack(null)
-            .commit()
-    }
-
     fun updateDonationData() {
         editDonation!!.amount = root.editAmount.text.toString().toInt()
         editDonation!!.message = root.editMessage.text.toString()
         editDonation!!.upvotes = root.editUpvotes.text.toString().toInt()
+    }
+
+    fun updateUserDonation(userId: String, uid: String?, donation: DonationModel) {
+        app.database.child("user-donations").child(userId).child(uid!!)
+            .addListenerForSingleValueEvent(
+                object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        snapshot.ref.setValue(donation)
+                        activity!!.supportFragmentManager.beginTransaction()
+                        .replace(R.id.homeFrame, ReportFragment.newInstance())
+                        .addToBackStack(null)
+                        .commit()
+                        hideLoader(loader)
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        info("Firebase Donation error : ${error.message}")
+                    }
+                })
+    }
+
+    fun updateDonation(uid: String?, donation: DonationModel) {
+        app.database.child("donations").child(uid!!)
+            .addListenerForSingleValueEvent(
+                object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        snapshot.ref.setValue(donation)
+                        hideLoader(loader)
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        info("Firebase Donation error : ${error.message}")
+                    }
+                })
     }
 }

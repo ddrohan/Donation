@@ -28,17 +28,4 @@ fun hideLoader(loader: AlertDialog) {
         loader.dismiss()
 }
 
-fun serviceUnavailableMessage(activity: FragmentActivity) {
-    Toast.makeText(activity,
-        "Donation Service Unavailable. Try again later",
-        Toast.LENGTH_LONG
-    ).show()
-}
-
-fun serviceAvailableMessage(activity: FragmentActivity) {
-    Toast.makeText(activity,
-        "Donation Contacted Successfully",
-        Toast.LENGTH_LONG
-    ).show()
-}
 
