@@ -74,6 +74,7 @@ class DonateFragment : Fragment(), AnkoLogger {
             else {
                 val paymentmethod = if(layout.paymentMethod.checkedRadioButtonId == R.id.Direct) "Direct" else "Paypal"
                 writeNewDonation(DonationModel(paymenttype = paymentmethod, amount = amount,
+                                               profilepic = app.userImage.toString(),
                                                email = app.auth.currentUser?.email))
             }
         }

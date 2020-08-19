@@ -13,8 +13,9 @@ data class DonationModel(
     var amount: Int = 0,
     var message: String = "a message",
     var upvotes: Int = 0,
+    var profilepic: String = "",
     var email: String? = "joe@bloggs.com")
-                        : Parcelable
+    : Parcelable
 {
     @Exclude
     fun toMap(): Map<String, Any?> {
@@ -24,9 +25,11 @@ data class DonationModel(
             "amount" to amount,
             "message" to message,
             "upvotes" to upvotes,
+            "profilepic" to profilepic,
             "email" to email
         )
     }
 }
+
 
 

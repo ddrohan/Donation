@@ -25,7 +25,7 @@ import kotlinx.android.synthetic.main.fragment_report.view.*
 import org.jetbrains.anko.AnkoLogger
 import org.jetbrains.anko.info
 
-class ReportFragment : Fragment(), AnkoLogger,
+open class ReportFragment : Fragment(), AnkoLogger,
     DonationListener {
 
     lateinit var app: DonationApp
@@ -79,7 +79,7 @@ class ReportFragment : Fragment(), AnkoLogger,
             }
     }
 
-    fun setSwipeRefresh() {
+    open fun setSwipeRefresh() {
         root.swiperefresh.setOnRefreshListener(object : SwipeRefreshLayout.OnRefreshListener {
             override fun onRefresh() {
                 root.swiperefresh.isRefreshing = true
@@ -128,7 +128,8 @@ class ReportFragment : Fragment(), AnkoLogger,
 
     override fun onResume() {
         super.onResume()
-        getAllDonations(app.auth.currentUser!!.uid)
+        if(this::class == ReportFragment::class)
+            getAllDonations(app.auth.currentUser!!.uid)
     }
 
     fun getAllDonations(userId: String?) {
@@ -150,7 +151,7 @@ class ReportFragment : Fragment(), AnkoLogger,
 
                         donationsList.add(donation!!)
                         root.recyclerView.adapter =
-                            DonationAdapter(donationsList, this@ReportFragment)
+                            DonationAdapter(donationsList, this@ReportFragment,false)
                         root.recyclerView.adapter?.notifyDataSetChanged()
                         checkSwipeRefresh()
 
