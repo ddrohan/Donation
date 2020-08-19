@@ -41,7 +41,7 @@ class Login : AppCompatActivity(), View.OnClickListener {
         emailCreateAccountButton.setOnClickListener(this)
         signOutButton.setOnClickListener(this)
         verifyEmailButton.setOnClickListener(this)
-
+        sign_in_button.setOnClickListener(this)
 
 
         app.auth = FirebaseAuth.getInstance()
@@ -57,6 +57,9 @@ class Login : AppCompatActivity(), View.OnClickListener {
         app.googleSignInClient = GoogleSignIn.getClient(this, gso)
 
         loader = createLoader(this)
+
+        sign_in_button.setSize(SignInButton.SIZE_WIDE)
+        sign_in_button.setColorScheme(0)
 
 
     }
@@ -215,7 +218,7 @@ class Login : AppCompatActivity(), View.OnClickListener {
             R.id.emailSignInButton -> signIn(fieldEmail.text.toString(), fieldPassword.text.toString())
             R.id.signOutButton -> signOut()
             R.id.verifyEmailButton -> sendEmailVerification()
-
+            R.id.sign_in_button -> googleSignIn()
         }
     }
 
