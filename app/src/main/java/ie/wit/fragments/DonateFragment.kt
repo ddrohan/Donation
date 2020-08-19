@@ -30,6 +30,7 @@ class DonateFragment : Fragment(), AnkoLogger {
     var totalDonated = 0
     lateinit var loader : AlertDialog
     lateinit var eventListener : ValueEventListener
+    var favourite = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,6 +55,7 @@ class DonateFragment : Fragment(), AnkoLogger {
             root.paymentAmount.setText("$newVal")
         }
         setButtonListener(root)
+        setFavouriteListener(root)
         return root;
     }
 
@@ -74,10 +76,28 @@ class DonateFragment : Fragment(), AnkoLogger {
             else {
                 val paymentmethod = if(layout.paymentMethod.checkedRadioButtonId == R.id.Direct) "Direct" else "Paypal"
                 writeNewDonation(DonationModel(paymenttype = paymentmethod, amount = amount,
-                                               profilepic = app.userImage.toString(),
-                                               email = app.auth.currentUser?.email))
+                    profilepic = app.userImage.toString(),
+                    isfavourite = favourite,
+                    latitude = app.currentLocation.latitude,
+                    longitude = app.currentLocation.longitude,
+                    email = app.auth.currentUser?.email))
             }
         }
+    }
+
+    fun setFavouriteListener (layout: View) {
+        layout.imagefavourite.setOnClickListener(object : View.OnClickListener {
+            override fun onClick(view: View?) {
+                if (!favourite) {
+                    layout.imagefavourite.setImageResource(android.R.drawable.star_big_on)
+                    favourite = true
+                }
+                else {
+                    layout.imagefavourite.setImageResource(android.R.drawable.star_big_off)
+                    favourite = false
+                }
+            }
+        })
     }
 
     override fun onResume() {

@@ -14,6 +14,9 @@ data class DonationModel(
     var message: String = "a message",
     var upvotes: Int = 0,
     var profilepic: String = "",
+    var isfavourite: Boolean = false,
+    var latitude: Double = 0.0,
+    var longitude: Double = 0.0,
     var email: String? = "joe@bloggs.com")
     : Parcelable
 {
@@ -26,10 +29,12 @@ data class DonationModel(
             "message" to message,
             "upvotes" to upvotes,
             "profilepic" to profilepic,
+            "isfavourite" to isfavourite,
+            "latitude" to latitude,
+            "longitude" to longitude,
             "email" to email
         )
     }
 }
-
 
 

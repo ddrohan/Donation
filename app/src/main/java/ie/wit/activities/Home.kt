@@ -1,24 +1,25 @@
 package ie.wit.activities
 
 import android.content.Intent
+import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.database.FirebaseDatabase
 import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 import ie.wit.R
-import ie.wit.fragments.AboutUsFragment
-import ie.wit.fragments.DonateFragment
-import ie.wit.fragments.ReportAllFragment
-import ie.wit.fragments.ReportFragment
+import ie.wit.fragments.*
 import ie.wit.main.DonationApp
 import ie.wit.utils.*
 import jp.wasabeef.picasso.transformations.CropCircleTransformation
@@ -40,9 +41,17 @@ class Home : AppCompatActivity(),
         setContentView(R.layout.home)
         setSupportActionBar(toolbar)
         app = application as DonationApp
-        fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action",
-                Snackbar.LENGTH_LONG).setAction("Action", null).show()
+
+//        app.currentLocation = Location("Default").apply {
+//            latitude = 52.245696
+//            longitude = -7.139102
+//        }
+
+        app.locationClient = LocationServices.getFusedLocationProviderClient(this)
+
+        if(checkLocationPermissions(this)) {
+            // todo get the current location
+            setCurrentLocation(app)
         }
 
         navView.setNavigationItemSelectedListener(this)
@@ -55,6 +64,7 @@ class Home : AppCompatActivity(),
         navView.getHeaderView(0).nav_header_email.text = app.auth.currentUser?.email
 
         //Checking if Google User, upload google profile pic
+
         checkExistingPhoto(app,this)
 
         navView.getHeaderView(0).imageView
@@ -65,6 +75,8 @@ class Home : AppCompatActivity(),
         val fragment = DonateFragment.newInstance()
         ft.replace(R.id.homeFrame, fragment)
         ft.commit()
+
+
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
@@ -78,6 +90,8 @@ class Home : AppCompatActivity(),
                 navigateTo(ReportAllFragment.newInstance())
             R.id.nav_aboutus ->
                 navigateTo(AboutUsFragment.newInstance())
+            R.id.nav_favourites ->
+                navigateTo(FavouritesFragment.newInstance())
             R.id.nav_sign_out -> signOut()
 
             else -> toast("You Selected Something Else")
@@ -141,5 +155,19 @@ class Home : AppCompatActivity(),
                 }
             }
         }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        if (isPermissionGranted(requestCode, grantResults)) {
+            // todo get the current location
+            setCurrentLocation(app)
+        } else {
+            // permissions denied, so use a default location
+            app.currentLocation = Location("Default").apply {
+                latitude = 52.245696
+                longitude = -7.139102
+            }
+        }
+        Log.v("Donation", "Home LAT: ${app.currentLocation.latitude} LNG: ${app.currentLocation.longitude}")
     }
 }

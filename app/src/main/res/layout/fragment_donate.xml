@@ -7,6 +7,18 @@
     android:layout_height="match_parent"
     tools:context=".fragments.DonateFragment">
 
+    <ImageView
+        android:id="@+id/imagefavourite"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="28dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.788"
+        app:layout_constraintStart_toEndOf="@+id/donateTitle"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@android:drawable/star_big_off" />
+
     <TextView
         android:id="@+id/donateTitle"
         android:layout_width="188dp"

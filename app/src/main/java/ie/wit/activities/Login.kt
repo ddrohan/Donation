@@ -1,6 +1,7 @@
 package ie.wit.activities
 
 import android.content.Intent
+import android.location.Location
 import android.os.Bundle
 import android.text.TextUtils
 import android.util.Log
@@ -13,6 +14,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.SignInButton
 import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -43,7 +46,6 @@ class Login : AppCompatActivity(), View.OnClickListener {
         signOutButton.setOnClickListener(this)
         verifyEmailButton.setOnClickListener(this)
         sign_in_button.setOnClickListener(this)
-
 
         app.auth = FirebaseAuth.getInstance()
 

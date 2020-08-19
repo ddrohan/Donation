@@ -49,6 +49,7 @@ class DonationAdapter constructor(var donations: ArrayList<DonationModel>,
             itemView.tag = donation
             itemView.paymentamount.text = donation.amount.toString()
             itemView.paymentmethod.text = donation.paymenttype
+            if(donation.isfavourite) itemView.imagefavourite.setImageResource(android.R.drawable.star_big_on)
 
             if(!reportAll)
                 itemView.setOnClickListener { listener.onDonationClick(donation) }
