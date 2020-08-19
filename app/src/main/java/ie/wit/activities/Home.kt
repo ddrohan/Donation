@@ -11,13 +11,16 @@ import androidx.fragment.app.FragmentTransaction
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.database.FirebaseDatabase
+import com.squareup.picasso.Picasso
 import ie.wit.R
 import ie.wit.fragments.AboutUsFragment
 import ie.wit.fragments.DonateFragment
 import ie.wit.fragments.ReportFragment
 import ie.wit.main.DonationApp
+import jp.wasabeef.picasso.transformations.CropCircleTransformation
 import kotlinx.android.synthetic.main.app_bar_home.*
 import kotlinx.android.synthetic.main.home.*
+import kotlinx.android.synthetic.main.nav_header_home.*
 import kotlinx.android.synthetic.main.nav_header_home.view.*
 import org.jetbrains.anko.startActivity
 import org.jetbrains.anko.toast
@@ -63,8 +66,7 @@ class Home : AppCompatActivity(),
                 navigateTo(ReportFragment.newInstance())
             R.id.nav_aboutus ->
                 navigateTo(AboutUsFragment.newInstance())
-            R.id.nav_sign_out ->
-                signOut()
+            R.id.nav_sign_out -> signOut()
 
             else -> toast("You Selected Something Else")
         }
@@ -100,10 +102,11 @@ class Home : AppCompatActivity(),
             .commit()
     }
 
-    private fun signOut()
-    {
-        app.auth.signOut()
-        startActivity<Login>()
-        finish()
+    private fun signOut() {
+        app.googleSignInClient.signOut().addOnCompleteListener(this) {
+            app.auth.signOut()
+            startActivity<Login>()
+            finish()
+        }
     }
 }
